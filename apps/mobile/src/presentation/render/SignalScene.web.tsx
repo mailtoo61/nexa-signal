@@ -26,6 +26,8 @@ function SignalSceneWebRaw({
   const dragFrom = dragPreview
     ? findNodePosition(nodes, dragPreview.fromNodeId)
     : null;
+  const hasPriorityFocus =
+    selectedNodeId !== null || focusedNodeId !== null || pulseNodeId !== null;
 
   return (
     <View
@@ -38,6 +40,22 @@ function SignalSceneWebRaw({
         },
       ]}
     >
+      <View
+        style={[
+          styles.ambientFar,
+          {
+            backgroundColor: theme.colors.link,
+          },
+        ]}
+      />
+      <View
+        style={[
+          styles.ambientMid,
+          {
+            backgroundColor: theme.colors.core,
+          },
+        ]}
+      />
       <View
         style={[
           styles.coreOuter,
@@ -100,6 +118,7 @@ function SignalSceneWebRaw({
         const isFocused = focusedNodeId === node.id;
         const isPulsing = pulseNodeId === node.id;
         const isEmphasized = isSelected || isFocused || isPulsing;
+        const quietNonPriority = hasPriorityFocus && !isEmphasized;
         const isDragHover = dragPreview?.hoverNodeId === node.id;
         const size = isEmphasized ? 20 : 14;
         const color = isDragHover ? theme.colors.core : theme.colors.node;
@@ -113,7 +132,7 @@ function SignalSceneWebRaw({
                     left: node.x - 16,
                     top: node.y - 16,
                     borderColor: theme.colors.core,
-                    opacity: isPulsing ? 0.85 : 0.52,
+                    opacity: isPulsing ? 0.85 : quietNonPriority ? 0.34 : 0.52,
                   },
                 ]}
               />
@@ -128,7 +147,7 @@ function SignalSceneWebRaw({
                   height: size,
                   borderRadius: size / 2,
                   backgroundColor: isEmphasized ? theme.colors.core : color,
-                  opacity: isEmphasized ? 1 : 0.88,
+                  opacity: isEmphasized ? 1 : quietNonPriority ? 0.7 : 0.88,
                 },
               ]}
             />
@@ -198,6 +217,22 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
+  },
+  ambientFar: {
+    position: 'absolute',
+    left: '-16%',
+    top: '-20%',
+    width: '132%',
+    height: '34%',
+    opacity: 0.035,
+  },
+  ambientMid: {
+    position: 'absolute',
+    left: '-6%',
+    top: '44%',
+    width: '112%',
+    height: '32%',
+    opacity: 0.04,
   },
   link: {
     position: 'absolute',

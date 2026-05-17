@@ -24,72 +24,42 @@ export function SessionSummaryPanel({
   onHome,
   onOpenPlaytestLab,
 }: SessionSummaryProps) {
+  const stabilizedActions =
+    summary.nodesStabilized +
+    summary.linksRepaired +
+    summary.connectionsCreated;
+
   return (
     <View style={styles.root}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>{tr(locale, 'summary')}</Text>
-        <Text style={styles.retry}>
-          {tr(locale, 'summaryCalmCollapseLine')}
-        </Text>
-        <Text style={styles.insight}>
-          {tr(locale, `insight_${summary.collapseReason ?? 'default'}`)}
-        </Text>
+        <Text style={styles.kicker}>{tr(locale, 'summary')}</Text>
+        <Text style={styles.title}>{tr(locale, 'networkLostTitle')}</Text>
+        <Text style={styles.subtitle}>{tr(locale, 'signalRecoveryReady')}</Text>
 
         <View style={styles.statRow}>
-          <View style={styles.statChip}>
-            <Text style={styles.statLabel}>{tr(locale, 'survivalTime')}</Text>
-            <Text style={styles.statValue}>{summary.survivalSeconds}s</Text>
-          </View>
           <View style={styles.statChip}>
             <Text style={styles.statLabel}>{tr(locale, 'finalScore')}</Text>
             <Text style={styles.statValue}>{summary.score}</Text>
           </View>
           <View style={styles.statChip}>
-            <Text style={styles.statLabel}>{tr(locale, 'bestScore')}</Text>
-            <Text style={styles.statValue}>{bestScore}</Text>
+            <Text style={styles.statLabel}>{tr(locale, 'survivalTime')}</Text>
+            <Text style={styles.statValue}>{summary.survivalSeconds}s</Text>
+          </View>
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>
+              {tr(locale, 'stabilizedActions')}
+            </Text>
+            <Text style={styles.statValue}>{stabilizedActions}</Text>
           </View>
         </View>
 
-        <Text style={styles.item}>
-          {tr(locale, 'nodesStabilized')}: {summary.nodesStabilized}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'linksRepaired')}: {summary.linksRepaired}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'connectionsCreated')}: {summary.connectionsCreated}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'criticalSaves')}: {summary.criticalSaves}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'signalGrade')}: {summary.signalGrade}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'relayConnectionsUsed')}: {summary.relayConnectionsUsed}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'amplifierBoosts')}: {summary.amplifierBoosts}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'stabilizerSaves')}: {summary.stabilizerSaves}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'decayerDamagePrevented')}:{' '}
-          {summary.decayerDamagePrevented}
-        </Text>
-        <Text style={styles.item}>
-          {tr(locale, 'coreRiskEvents')}: {summary.coreRiskEvents}
-        </Text>
-        {summary.collapseReason ? (
-          <Text style={styles.item}>
-            {tr(locale, 'collapseReason')}: {tr(locale, summary.collapseReason)}
-          </Text>
-        ) : null}
-        <Text style={styles.retry}>{tr(locale, 'retryEncouragement')}</Text>
+        <View style={styles.metaRow}>
+          <Text style={styles.metaLabel}>{tr(locale, 'bestScore')}</Text>
+          <Text style={styles.metaValue}>{bestScore}</Text>
+        </View>
         <Text style={styles.insight}>
           {tr(
             locale,
@@ -127,13 +97,13 @@ export function SessionSummaryPanel({
           style={[styles.button, styles.buttonPrimary]}
           onPress={onRestart}
         >
-          <Text style={styles.buttonText}>{tr(locale, 'restart')}</Text>
+          <Text style={styles.buttonText}>{tr(locale, 'retryNetwork')}</Text>
         </Pressable>
         <Pressable
           style={[styles.button, styles.buttonSecondary]}
           onPress={onHome}
         >
-          <Text style={styles.buttonText}>{tr(locale, 'home')}</Text>
+          <Text style={styles.buttonText}>{tr(locale, 'backHome')}</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -145,64 +115,105 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: designTokens.spacing.lg,
     right: designTokens.spacing.lg,
-    top: '16%',
-    borderRadius: designTokens.radii.lg,
-    backgroundColor: '#0E1735EE',
+    top: '18%',
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#5D88B833',
+    backgroundColor: '#0A142BD9',
     padding: designTokens.spacing.lg,
-    maxHeight: '72%',
+    maxHeight: '68%',
+    shadowColor: '#6BD8FF',
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
   },
   scrollContent: {
-    gap: designTokens.spacing.sm,
-    paddingBottom: 2,
+    gap: designTokens.spacing.md,
+    paddingBottom: 4,
+  },
+  kicker: {
+    color: '#9BC3EE',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.1,
+    textAlign: 'center',
   },
   title: {
-    color: designTokens.colors.textPrimary,
-    fontSize: 24,
+    color: '#E8F4FF',
+    fontSize: 27,
     fontWeight: '700',
-    marginBottom: 4,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  item: { color: designTokens.colors.textPrimary, fontSize: 15 },
+  subtitle: {
+    color: '#B8D8F8',
+    fontSize: 13,
+    letterSpacing: 0.4,
+    textAlign: 'center',
+  },
   statRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   statChip: {
     flex: 1,
-    borderRadius: designTokens.radii.md,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#3C5F8A88',
-    backgroundColor: '#0A152EC9',
-    paddingVertical: 8,
-    paddingHorizontal: 6,
+    borderColor: '#5A84B64D',
+    backgroundColor: '#0D1C38C7',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 3,
   },
   statLabel: {
-    color: '#97BBE9',
-    fontSize: 10,
+    color: '#9CC1E8',
+    fontSize: 9,
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: 0.9,
     textAlign: 'center',
   },
   statValue: {
-    color: '#E4F2FF',
-    fontSize: 15,
+    color: '#ECF7FF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: designTokens.radii.round,
+    borderWidth: 1,
+    borderColor: '#476D9952',
+    backgroundColor: '#0A183197',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  metaLabel: {
+    color: '#9DBEE5',
+    fontSize: 10,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  metaValue: {
+    color: '#E3F2FF',
+    fontSize: 12,
     fontWeight: '700',
   },
   newBest: {
     color: designTokens.colors.cyan,
     fontSize: 14,
     fontWeight: '700',
+    textAlign: 'center',
   },
   insight: {
-    color: '#A6C6F7',
-    fontSize: 13,
-  },
-  retry: {
-    color: '#CDE3FF',
-    fontSize: 13,
-    fontWeight: '600',
+    color: '#A7C7EA',
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: 'center',
   },
   devPanel: {
     borderRadius: designTokens.radii.md,
@@ -237,28 +248,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   button: {
-    minHeight: 50,
+    minHeight: 52,
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#75C7F8',
+    borderColor: '#6BBCE7',
     justifyContent: 'center',
     paddingHorizontal: designTokens.spacing.md,
   },
   buttonPrimary: {
-    backgroundColor: '#123067CC',
-    shadowColor: '#73DCFF',
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: '#16376ACC',
+    shadowColor: '#70D9FF',
+    shadowOpacity: 0.24,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 3 },
   },
   buttonSecondary: {
-    backgroundColor: '#0D1936AA',
-    borderColor: '#4A6A95',
+    backgroundColor: '#0E1B349E',
+    borderColor: '#55729B',
   },
   buttonText: {
     color: designTokens.colors.textPrimary,
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
   },
 });

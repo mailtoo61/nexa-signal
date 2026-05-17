@@ -24,6 +24,9 @@ export function NodeLayer({
   pulseNodeId,
   dragHoverNodeId,
 }: NodeLayerProps) {
+  const hasPriorityFocus =
+    selectedNodeId !== null || focusedNodeId !== null || pulseNodeId !== null;
+
   return (
     <Group>
       {nodes.map((node) => {
@@ -35,6 +38,7 @@ export function NodeLayer({
         const isFocused = focusedNodeId === node.id;
         const isPulsing = pulseNodeId === node.id;
         const isEmphasized = isSelected || isFocused || isPulsing;
+        const quietNonPriority = hasPriorityFocus && !isEmphasized;
         const tone =
           node.type === 'decayer'
             ? '#8C70B6'
@@ -54,7 +58,10 @@ export function NodeLayer({
               color={
                 node.overload > 75 ? theme.colors.danger : theme.colors.core
               }
-              opacity={0.2 + (1 - overloadFactor) * 0.16}
+              opacity={
+                (0.2 + (1 - overloadFactor) * 0.16) *
+                (quietNonPriority ? 0.7 : 1)
+              }
             />
             {isFocused || isPulsing ? (
               <PulseRing
@@ -71,7 +78,7 @@ export function NodeLayer({
                 y={node.y}
                 radius={12 + pulsePhase * 3}
                 color={tone}
-                opacity={0.25}
+                opacity={quietNonPriority ? 0.16 : 0.25}
               />
             ) : null}
             <NodeOrb
@@ -98,7 +105,9 @@ export function NodeLayer({
                           ? 8
                           : 4
               }
-              alpha={node.health < 35 ? 0.45 : 1}
+              alpha={
+                (node.health < 35 ? 0.45 : 1) * (quietNonPriority ? 0.82 : 1)
+              }
             />
           </Group>
         );

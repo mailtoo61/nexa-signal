@@ -23,12 +23,20 @@ export function BackgroundLayer({
         color={theme.colors.bgTop}
       />
       <Rect
+        x={-width * 0.18}
+        y={-height * 0.22}
+        width={width * 1.36}
+        height={height * 0.34}
+        color={theme.colors.link}
+        opacity={0.028}
+      />
+      <Rect
         x={-width * 0.08}
         y={-height * 0.06}
         width={width * 1.16}
         height={height * 0.46}
         color={theme.colors.core}
-        opacity={0.05}
+        opacity={0.04}
       />
       <Rect
         x={0}
@@ -44,7 +52,15 @@ export function BackgroundLayer({
         width={width * 1.24}
         height={height * 0.5}
         color={theme.colors.link}
-        opacity={0.045}
+        opacity={0.038}
+      />
+      <Rect
+        x={-width * 0.04}
+        y={height * 0.18}
+        width={width * 1.08}
+        height={height * 0.28}
+        color={theme.colors.core}
+        opacity={0.024}
       />
     </Group>
   );

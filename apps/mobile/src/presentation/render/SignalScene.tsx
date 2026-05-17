@@ -35,6 +35,7 @@ function SignalSceneRaw({
     reducedMotion,
   );
   const pulsePhase = reducedMotion ? 0.35 : (snapshot.tick % 10) / 10;
+  const ambientPhase = reducedMotion ? 0.45 : (snapshot.tick % 120) / 120;
   const dragFrom = dragPreview
     ? findNodePosition(nodes, dragPreview.fromNodeId)
     : null;
@@ -42,6 +43,22 @@ function SignalSceneRaw({
   return (
     <Canvas style={{ width, height }}>
       <BackgroundLayer width={width} height={height} theme={theme} />
+      <Group>
+        <Circle
+          cx={width * 0.5}
+          cy={height * 0.52}
+          r={Math.min(width, height) * (0.34 + ambientPhase * 0.02)}
+          color={theme.colors.core}
+          opacity={reducedMotion ? 0.03 : 0.045}
+        />
+        <Circle
+          cx={width * 0.5}
+          cy={height * 0.52}
+          r={Math.min(width, height) * (0.45 + ambientPhase * 0.025)}
+          color={theme.colors.link}
+          opacity={reducedMotion ? 0.018 : 0.028}
+        />
+      </Group>
       <ParticleLayer particles={particles} color={theme.colors.core} />
       <LinkLayer
         snapshot={snapshot}
