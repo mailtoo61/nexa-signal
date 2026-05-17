@@ -22,6 +22,7 @@ import { GameHud } from './components/GameHud';
 import { CollapseMeter } from './components/CollapseMeter';
 import { SelectionPanel } from './components/SelectionPanel';
 import { SessionSummaryPanel } from './components/SessionSummary';
+import { DevPerformanceOverlay } from './components/DevPerformanceOverlay';
 import { PlaytestLabPanel } from './components/PlaytestLabPanel';
 import { TutorialHint } from './components/TutorialHint';
 import { NodeLegend } from './components/NodeLegend';
@@ -502,6 +503,11 @@ export function GameScreen(): React.JSX.Element {
     outputRange: [0.72, 1],
   });
   const signalNodeGlow = getSignalAssetSource('signalNodeGlow');
+  const sceneState: 'booting' | 'live' | 'summary' = ended
+    ? 'summary'
+    : sessionBooting
+      ? 'booting'
+      : 'live';
 
   const actionItems = useMemo(
     () =>
@@ -749,6 +755,14 @@ export function GameScreen(): React.JSX.Element {
           />
 
           <View pointerEvents="box-none" style={styles.overlay}>
+            {__DEV__ ? (
+              <DevPerformanceOverlay
+                nodeCount={snapshot.nodes.length}
+                linkCount={snapshot.links.length}
+                reducedMotion={reducedMotion}
+                sceneState={sceneState}
+              />
+            ) : null}
             {!reducedMotion ? (
               <Animated.View
                 pointerEvents="none"
