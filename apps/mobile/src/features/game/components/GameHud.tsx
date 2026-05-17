@@ -24,7 +24,7 @@ export function GameHud({
     <GlassPanel style={styles.root}>
       <SignalGlassHighlight
         intensity={1}
-        opacity={0.2}
+        opacity={0.24}
         borderRadius={10}
         verticalOffset={-10}
       />
@@ -51,6 +51,8 @@ const styles = StyleSheet.create({
   root: {
     gap: 5,
     overflow: 'hidden',
+    borderColor: '#7EAED15A',
+    backgroundColor: '#132846AE',
   },
   topRow: {
     flexDirection: 'row',
@@ -65,13 +67,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   item: {
-    color: '#CFE4FFD6',
+    color: '#D5E9FFDE',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
   objective: {
-    color: '#8CB4E0',
+    color: '#9EC2E8',
     fontSize: 10,
     letterSpacing: 0.9,
     textTransform: 'uppercase',

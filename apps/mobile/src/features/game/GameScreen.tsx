@@ -151,6 +151,7 @@ export function GameScreen(): React.JSX.Element {
   const feedbackRise = useRef(new Animated.Value(0)).current;
   const invalidShake = useRef(new Animated.Value(0)).current;
   const focusGlow = useRef(new Animated.Value(0)).current;
+  const entryAtmosphereFade = useRef(new Animated.Value(1)).current;
 
   const feedbackSettings: FeedbackSettings = useMemo(
     () => ({
@@ -380,6 +381,20 @@ export function GameScreen(): React.JSX.Element {
     loop.start();
     return () => loop.stop();
   }, [focusGlow, reducedMotion]);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      entryAtmosphereFade.setValue(0);
+      return;
+    }
+    entryAtmosphereFade.setValue(1);
+    Animated.timing(entryAtmosphereFade, {
+      toValue: 0,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [entryAtmosphereFade, reducedMotion]);
 
   useEffect(() => {
     if (!pulseNodeId && !pulseLinkId) return;
@@ -734,6 +749,15 @@ export function GameScreen(): React.JSX.Element {
           />
 
           <View pointerEvents="box-none" style={styles.overlay}>
+            {!reducedMotion ? (
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.entryAtmosphereReveal,
+                  { opacity: entryAtmosphereFade },
+                ]}
+              />
+            ) : null}
             <View pointerEvents="none" style={styles.atmosphereVeilTop} />
             <View pointerEvents="none" style={styles.atmosphereVeilBottom} />
             <View style={styles.topStack}>
@@ -984,6 +1008,11 @@ const styles = StyleSheet.create({
     paddingBottom: designTokens.spacing.lg,
     justifyContent: 'space-between',
     gap: designTokens.spacing.xs,
+  },
+  entryAtmosphereReveal: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#78D7FF1F',
+    zIndex: 8,
   },
   atmosphereVeilTop: {
     position: 'absolute',

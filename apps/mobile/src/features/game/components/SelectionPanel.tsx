@@ -59,6 +59,9 @@ export function SelectionPanel({
                 onPress={action.onPress}
                 style={({ pressed }) => [
                   styles.button,
+                  action.recommended &&
+                    !action.disabled &&
+                    styles.buttonRecommended,
                   action.disabled && styles.disabled,
                   pressed && styles.buttonPressed,
                 ]}
@@ -117,6 +120,14 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: designTokens.spacing.sm,
     backgroundColor: '#13284DAF',
+  },
+  buttonRecommended: {
+    borderColor: '#8FD7FFBC',
+    backgroundColor: '#1A3A65D9',
+    shadowColor: '#73CCFF',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
   },
   disabled: {
     borderColor: '#5A6E94AA',

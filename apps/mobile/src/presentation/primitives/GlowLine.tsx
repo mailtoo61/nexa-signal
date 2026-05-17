@@ -81,8 +81,8 @@ export function GlowLine({
         p1={{ x: x1, y: y1 }}
         p2={{ x: x2, y: y2 }}
         color={color}
-        strokeWidth={highlight ? 2.8 : 2.2}
-        opacity={highlight ? 0.94 : 0.75}
+        strokeWidth={highlight ? 2.4 : 1.9}
+        opacity={highlight ? 0.88 : 0.68}
       />
     </>
   );

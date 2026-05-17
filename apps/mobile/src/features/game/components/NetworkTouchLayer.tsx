@@ -136,6 +136,10 @@ export function NetworkTouchLayer({
     inputRange: [0, 1],
     outputRange: [0.34, 0.78],
   });
+  const focusRingOpacity = livePulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.28, 0.66],
+  });
 
   useEffect(() => {
     if (reducedMotion) {
@@ -243,14 +247,23 @@ export function NetworkTouchLayer({
                 style={[
                   styles.nodeAura,
                   {
-                    left: node.x - 28,
-                    top: node.y - 28,
+                    left: node.x - (isSelected ? 31 : isFocused ? 30 : 28),
+                    top: node.y - (isSelected ? 31 : isFocused ? 30 : 28),
+                    width: isSelected ? 62 : isFocused ? 60 : 56,
+                    height: isSelected ? 62 : isFocused ? 60 : 56,
+                    borderRadius: isSelected ? 31 : isFocused ? 30 : 28,
                     borderColor: isSelected
                       ? '#75EAFF'
                       : isFocused
                         ? '#9B8CFF'
-                        : '#FF9FB1',
-                    opacity: reducedMotion ? 0.35 : ringOpacity,
+                        : '#E0B6FF',
+                    opacity: reducedMotion
+                      ? isSelected
+                        ? 0.5
+                        : 0.35
+                      : isSelected || isFocused
+                        ? focusRingOpacity
+                        : ringOpacity,
                     transform: reducedMotion
                       ? undefined
                       : [{ scale: ringScale }],
@@ -333,23 +346,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nodeGlowTexture: {
-    width: 74,
-    height: 74,
-    opacity: 0.54,
+    width: 78,
+    height: 78,
+    opacity: 0.6,
   },
   nodeGlowSelected: {
-    opacity: 0.58,
+    opacity: 0.72,
   },
   nodeGlowFocused: {
-    opacity: 0.44,
+    opacity: 0.58,
   },
   nodeGlowUnstable: {
-    opacity: 0.36,
+    opacity: 0.42,
   },
   nodeSelected: {
     shadowColor: '#6EE9FF',
-    shadowOpacity: 0.52,
-    shadowRadius: 11,
+    shadowOpacity: 0.58,
+    shadowRadius: 13,
     shadowOffset: { width: 0, height: 0 },
   },
   nodeFocused: {

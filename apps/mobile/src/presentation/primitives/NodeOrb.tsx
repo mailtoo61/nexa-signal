@@ -25,9 +25,16 @@ export function NodeOrb({
         cy={y}
         r={radius + glow}
         color={color}
-        opacity={0.12 * alpha}
+        opacity={0.09 * alpha}
       />
-      <Circle cx={x} cy={y} r={radius} color={color} opacity={alpha} />
+      <Circle cx={x} cy={y} r={radius} color={color} opacity={0.92 * alpha} />
+      <Circle
+        cx={x}
+        cy={y}
+        r={Math.max(2.2, radius * 0.46)}
+        color="#E7F6FF"
+        opacity={0.2 * alpha}
+      />
     </Group>
   );
 }

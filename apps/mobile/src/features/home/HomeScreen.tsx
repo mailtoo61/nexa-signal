@@ -129,6 +129,7 @@ export function HomeScreen(): React.JSX.Element {
   const [enteringNetwork, setEnteringNetwork] = useState(false);
   const corePulse = useMemo(() => new Animated.Value(0), []);
   const coreDrift = useMemo(() => new Animated.Value(0), []);
+  const enterTransitionGlow = useMemo(() => new Animated.Value(0), []);
 
   const cards = useMemo<SecondaryCard[]>(
     () => [
@@ -256,6 +257,26 @@ export function HomeScreen(): React.JSX.Element {
     inputRange: [0, 1],
     outputRange: [0, -6],
   });
+  const driftX = coreDrift.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-1.5, 1.5],
+  });
+  const heroTilt = coreDrift.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-0.8deg', '0.8deg'],
+  });
+  const livingCtaOpacity = corePulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.88, 1],
+  });
+  const navActiveGlowOpacity = corePulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.2, 0.46],
+  });
+  const navActiveGlowScale = corePulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.98, 1.03],
+  });
   const isCompactLayout = width < 390;
   const isDesktopWeb = Platform.OS === 'web' && width >= 900;
   const frameWidth = isDesktopWeb ? Math.min(460, width - 48) : width;
@@ -296,13 +317,15 @@ export function HomeScreen(): React.JSX.Element {
           ]}
         >
           <View style={styles.heroAtmosphereField} pointerEvents="none">
-            <SignalScene
-              width={frameWidth}
-              height={frameHeight}
-              snapshot={snapshot}
-              themeId="defaultSignal"
-              reducedMotion={reducedMotion}
-            />
+            <View style={styles.heroAtmosphereSceneWrap}>
+              <SignalScene
+                width={frameWidth}
+                height={frameHeight}
+                snapshot={snapshot}
+                themeId="defaultSignal"
+                reducedMotion={reducedMotion}
+              />
+            </View>
           </View>
           <View style={styles.networkField}>
             <View style={styles.ambientVeilTop} />
@@ -314,12 +337,17 @@ export function HomeScreen(): React.JSX.Element {
                 style={styles.noiseOverlay}
               />
             ) : null}
-            <View
-              style={[styles.networkLine, styles.networkLineHeroOnly]}
-              pointerEvents="none"
-            />
           </View>
           <View style={styles.overlay}>
+            {!reducedMotion ? (
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.enterTransitionVeil,
+                  { opacity: enterTransitionGlow },
+                ]}
+              />
+            ) : null}
             <View
               style={[
                 styles.contentStack,
@@ -333,7 +361,13 @@ export function HomeScreen(): React.JSX.Element {
                     { width: heroVisualSize, height: heroVisualSize },
                     reducedMotion
                       ? null
-                      : { transform: [{ translateY: driftY }] },
+                      : {
+                          transform: [
+                            { translateY: driftY },
+                            { translateX: driftX },
+                            { rotate: heroTilt },
+                          ],
+                        },
                   ]}
                 >
                   <Animated.View
@@ -365,6 +399,16 @@ export function HomeScreen(): React.JSX.Element {
                       ]}
                     />
                   ) : null}
+                  <View
+                    style={[
+                      styles.heroShellAtmosphereVeil,
+                      {
+                        width: heroHaloOuterSize + 56,
+                        height: heroHaloOuterSize + 56,
+                        borderRadius: (heroHaloOuterSize + 56) / 2,
+                      },
+                    ]}
+                  />
                   {signalRingGlow ? (
                     <Image
                       source={signalRingGlow}
@@ -451,7 +495,7 @@ export function HomeScreen(): React.JSX.Element {
                     {signalHeroCore ? (
                       <Image
                         source={signalHeroCore}
-                        resizeMode="cover"
+                        resizeMode="contain"
                         style={styles.heroCoreAsset}
                       />
                     ) : null}
@@ -492,14 +536,20 @@ export function HomeScreen(): React.JSX.Element {
                       borderWidth={1.3}
                     />
                   </Animated.View>
-                  <View style={[styles.ctaSurface, { width: ctaWidth + 8 }]}>
+                  <Animated.View
+                    style={[
+                      styles.ctaSurface,
+                      { width: ctaWidth + 8 },
+                      reducedMotion ? null : { opacity: livingCtaOpacity },
+                    ]}
+                  >
                     <SignalGlassHighlight
                       intensity={1}
-                      opacity={0.18}
+                      opacity={0.22}
                       borderRadius={designTokens.radii.round}
                       verticalOffset={-10}
                     />
-                  </View>
+                  </Animated.View>
                   <SignalButton
                     accessibilityRole="button"
                     accessibilityLabel={tr(locale, 'enterNetwork')}
@@ -507,6 +557,7 @@ export function HomeScreen(): React.JSX.Element {
                     style={[styles.ctaButton, { minWidth: ctaWidth }]}
                     onPress={async () => {
                       if (enteringNetwork) return;
+                      enterTransitionGlow.setValue(0);
                       setEnteringNetwork(true);
                       try {
                         await runTouchRippleFeedback({
@@ -538,6 +589,16 @@ export function HomeScreen(): React.JSX.Element {
                           );
                         }
                         setResumableSession(continueResult.resumableSession);
+                        if (!reducedMotion) {
+                          await new Promise<void>((resolve) => {
+                            Animated.timing(enterTransitionGlow, {
+                              toValue: 1,
+                              duration: 180,
+                              easing: Easing.out(Easing.cubic),
+                              useNativeDriver: true,
+                            }).start(() => resolve());
+                          });
+                        }
                         track({
                           name: 'session_started',
                           timestamp: Date.now(),
@@ -589,7 +650,7 @@ export function HomeScreen(): React.JSX.Element {
                     >
                       <SignalGlassHighlight
                         intensity={0.9}
-                        opacity={0.14}
+                        opacity={0.18}
                         borderRadius={designTokens.radii.md}
                         verticalOffset={-8}
                       />
@@ -648,6 +709,18 @@ export function HomeScreen(): React.JSX.Element {
                   });
                 }}
               >
+                {!reducedMotion ? (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.bottomPillActiveGlow,
+                      {
+                        opacity: navActiveGlowOpacity,
+                        transform: [{ scale: navActiveGlowScale }],
+                      },
+                    ]}
+                  />
+                ) : null}
                 <Text
                   style={[styles.bottomPillText, styles.bottomPillActiveText]}
                 >
@@ -757,12 +830,17 @@ const styles = StyleSheet.create({
   },
   heroAtmosphereField: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: '8%',
+    right: '8%',
     top: 0,
-    height: '38%',
+    height: '22%',
     overflow: 'hidden',
-    opacity: 0.54,
+    opacity: 0.18,
+  },
+  heroAtmosphereSceneWrap: {
+    width: '100%',
+    height: '100%',
+    transform: [{ scale: 0.82 }],
   },
   networkField: {
     ...StyleSheet.absoluteFillObject,
@@ -790,19 +868,7 @@ const styles = StyleSheet.create({
   networkLine: {
     position: 'absolute',
     height: 1,
-    backgroundColor: '#72D8FF12',
-  },
-  networkLineOne: {
-    width: '64%',
-    left: '-6%',
-    top: '23%',
-    transform: [{ rotate: '16deg' }],
-  },
-  networkLineHeroOnly: {
-    width: '22%',
-    left: '14%',
-    top: '9%',
-    transform: [{ rotate: '7deg' }],
+    backgroundColor: '#72D8FF0A',
   },
   networkNode: {
     position: 'absolute',
@@ -816,6 +882,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: designTokens.spacing.lg,
     paddingTop: designTokens.spacing.xl + 2,
     paddingBottom: designTokens.spacing.lg,
+  },
+  enterTransitionVeil: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#7BD9FF14',
+    zIndex: 16,
   },
   contentStack: {
     flex: 1,
@@ -835,12 +906,19 @@ const styles = StyleSheet.create({
   heroVisual: { alignItems: 'center', justifyContent: 'center' },
   heroAssetEnergyShell: {
     position: 'absolute',
-    opacity: 0.12,
+    opacity: 0.84,
+    zIndex: 1,
+  },
+  heroShellAtmosphereVeil: {
+    position: 'absolute',
+    backgroundColor: '#69D8FF10',
+    borderWidth: 1,
+    borderColor: '#8A84FF1A',
     zIndex: 1,
   },
   heroAssetRingGlow: {
     position: 'absolute',
-    opacity: 0.22,
+    opacity: 1,
     zIndex: 2,
   },
   heroHaloOuter: {
@@ -890,19 +968,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#173465E8',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
     overflow: 'hidden',
     zIndex: 6,
   },
   heroCoreAsset: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.68,
-    zIndex: 7,
-    transform: [{ scale: 0.5 }],
+    width: '78%',
+    height: '78%',
+    opacity: 0.98,
+    zIndex: 8,
   },
   heroTextBlock: {
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 12,
   },
   heroTitle: {
     color: '#E7F4FF',
@@ -930,8 +1007,12 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#5D95C466',
-    backgroundColor: '#0D1E3A54',
+    borderColor: '#7FAFD05E',
+    backgroundColor: '#12284970',
+    shadowColor: '#80CCFF',
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
   },
   ctaButton: {
     minWidth: 248,
@@ -958,13 +1039,17 @@ const styles = StyleSheet.create({
   moduleCard: {
     minHeight: 54,
     justifyContent: 'center',
-    backgroundColor: '#0C183094',
+    backgroundColor: '#132846A6',
     borderWidth: 1,
-    borderColor: '#3A5D8785',
+    borderColor: '#82ADD14D',
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: designTokens.radii.md,
     overflow: 'hidden',
+    shadowColor: '#73C5F5',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   cardIcon: {
     position: 'absolute',
@@ -1012,8 +1097,12 @@ const styles = StyleSheet.create({
     minHeight: 52,
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#3A5E897D',
-    backgroundColor: '#091428B8',
+    borderColor: '#6C94BE66',
+    backgroundColor: '#102440CC',
+    shadowColor: '#6EBDEB',
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
     paddingHorizontal: designTokens.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1035,12 +1124,18 @@ const styles = StyleSheet.create({
   bottomPillActive: {
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#74D8FFE0',
-    backgroundColor: '#123159E6',
+    borderColor: '#90DBFFCF',
+    backgroundColor: '#1A3C68EE',
     shadowColor: '#6CE6FF',
-    shadowOpacity: 0.22,
-    shadowRadius: 9,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 1 },
+    overflow: 'hidden',
+  },
+  bottomPillActiveGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: designTokens.radii.round,
+    backgroundColor: '#7CD8FF33',
   },
   bottomPillPressed: {
     opacity: 0.9,
@@ -1053,7 +1148,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   bottomPillText: {
-    color: '#7E98BCDB',
+    color: '#87A4C6D9',
     fontSize: 11,
     letterSpacing: 0.7,
   },
