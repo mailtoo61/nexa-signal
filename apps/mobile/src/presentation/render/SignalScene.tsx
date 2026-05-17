@@ -42,7 +42,13 @@ function SignalSceneRaw({
 
   return (
     <Canvas style={{ width, height }}>
-      <BackgroundLayer width={width} height={height} theme={theme} />
+      <BackgroundLayer
+        width={width}
+        height={height}
+        theme={theme}
+        ambientPhase={ambientPhase}
+        reducedMotion={reducedMotion}
+      />
       <Group>
         <Circle
           cx={width * 0.5}
@@ -64,6 +70,7 @@ function SignalSceneRaw({
         snapshot={snapshot}
         nodes={nodes}
         theme={theme}
+        pulsePhase={pulsePhase}
         selectedLinkId={selectedLinkId}
         focusedLinkId={focusedLinkId}
         pulseLinkId={pulseLinkId}

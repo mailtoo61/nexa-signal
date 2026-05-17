@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +13,7 @@ import { router } from 'expo-router';
 import type { Locale } from '@nexa/types';
 import { tr } from '../../shared/i18n/tr';
 import { designTokens } from '../../shared/design/tokens';
+import { MobileShell } from '../../presentation/layout/MobileShell';
 import { useAppSettingsStore } from '../../state/appSettingsStore';
 import { resetLocalProgress } from '../../shared/storage/persistence';
 import { useGameStore } from '../../state/gameStore';
@@ -49,6 +51,7 @@ export function SettingsScreen(): React.JSX.Element {
   const applyPostReset = useAppSettingsStore((state) => state.applyPostReset);
 
   const [busy, setBusy] = useState(false);
+  const showScrollIndicator = Platform.OS !== 'web';
 
   const locale = selectedLanguage;
   const configValidation = useMemo(
@@ -134,132 +137,142 @@ export function SettingsScreen(): React.JSX.Element {
   };
 
   return (
-    <View style={styles.root}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={tr(locale, 'backToHome')}
-          style={styles.backButton}
-          onPress={() => router.back()}
+    <MobileShell>
+      <View style={styles.root}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={tr(locale, 'backToHome')}
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>{tr(locale, 'back')}</Text>
+          </Pressable>
+          <Text style={styles.title}>{tr(locale, 'settings')}</Text>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={showScrollIndicator}
+          indicatorStyle="white"
         >
-          <Text style={styles.backButtonText}>{tr(locale, 'back')}</Text>
-        </Pressable>
-        <Text style={styles.title}>{tr(locale, 'settings')}</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {tr(locale, 'feedbackControls')}
-          </Text>
-          <ToggleRow
-            label={tr(locale, 'audio')}
-            description={tr(locale, 'audioSettingDescription')}
-            value={audioEnabled}
-            onToggle={() => void setAudioEnabled(!audioEnabled)}
-            locale={locale}
-          />
-          <ToggleRow
-            label={tr(locale, 'haptics')}
-            description={tr(locale, 'hapticsSettingDescription')}
-            value={hapticsEnabled}
-            onToggle={() => void setHapticsEnabled(!hapticsEnabled)}
-            locale={locale}
-          />
-          <ToggleRow
-            label={tr(locale, 'reducedMotion')}
-            description={tr(locale, 'reducedMotionSettingDescription')}
-            value={reducedMotionEnabled}
-            onToggle={() => void setReducedMotionEnabled(!reducedMotionEnabled)}
-            locale={locale}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{tr(locale, 'language')}</Text>
-          {SUPPORTED_LANGUAGES.map((lang) => {
-            const active = lang === selectedLanguage;
-            return (
-              <Pressable
-                key={lang}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                accessibilityLabel={`${tr(locale, 'language')}: ${getLocaleDisplayName(lang, locale)}`}
-                style={[
-                  styles.languageButton,
-                  active ? styles.languageActive : null,
-                ]}
-                onPress={() => void setSelectedLanguage(lang)}
-              >
-                <Text style={styles.languageText}>
-                  {getLocaleDisplayName(lang, locale)}
-                </Text>
-                <Text style={styles.languageStateText}>
-                  {active ? tr(locale, 'selected') : tr(locale, 'select')}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {tr(locale, 'dataAndPrivacy')}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={tr(locale, 'resetLocalProgress')}
-            style={styles.destructiveButton}
-            onPress={() => askReset(false)}
-            disabled={busy}
-          >
-            <Text style={styles.destructiveButtonText}>
-              {tr(locale, 'resetLocalProgress')}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {tr(locale, 'feedbackControls')}
             </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={tr(locale, 'fullResetIncludingSettings')}
-            style={styles.destructiveButton}
-            onPress={() => askReset(true)}
-            disabled={busy}
-          >
-            <Text style={styles.destructiveButtonText}>
-              {tr(locale, 'fullResetIncludingSettings')}
-            </Text>
-          </Pressable>
-        </View>
+            <ToggleRow
+              label={tr(locale, 'audio')}
+              description={tr(locale, 'audioSettingDescription')}
+              value={audioEnabled}
+              onToggle={() => void setAudioEnabled(!audioEnabled)}
+              locale={locale}
+            />
+            <ToggleRow
+              label={tr(locale, 'haptics')}
+              description={tr(locale, 'hapticsSettingDescription')}
+              value={hapticsEnabled}
+              onToggle={() => void setHapticsEnabled(!hapticsEnabled)}
+              locale={locale}
+            />
+            <ToggleRow
+              label={tr(locale, 'reducedMotion')}
+              description={tr(locale, 'reducedMotionSettingDescription')}
+              value={reducedMotionEnabled}
+              onToggle={() =>
+                void setReducedMotionEnabled(!reducedMotionEnabled)
+              }
+              locale={locale}
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {tr(locale, 'legalAndSupport')}
-          </Text>
-          {legalItems.map((item) => (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{tr(locale, 'language')}</Text>
+            {SUPPORTED_LANGUAGES.map((lang) => {
+              const active = lang === selectedLanguage;
+              return (
+                <Pressable
+                  key={lang}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`${tr(locale, 'language')}: ${getLocaleDisplayName(lang, locale)}`}
+                  style={[
+                    styles.languageButton,
+                    active ? styles.languageActive : null,
+                  ]}
+                  onPress={() => void setSelectedLanguage(lang)}
+                >
+                  <Text style={styles.languageText}>
+                    {getLocaleDisplayName(lang, locale)}
+                  </Text>
+                  <Text style={styles.languageStateText}>
+                    {active ? tr(locale, 'selected') : tr(locale, 'select')}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {tr(locale, 'dataAndPrivacy')}
+            </Text>
             <Pressable
-              key={item.key}
               accessibilityRole="button"
-              accessibilityLabel={item.title}
-              style={styles.linkButton}
-              onPress={() => void openLink(item.url)}
+              accessibilityLabel={tr(locale, 'resetLocalProgress')}
+              style={styles.destructiveButton}
+              onPress={() => askReset(false)}
+              disabled={busy}
             >
-              <Text style={styles.linkButtonText}>{item.title}</Text>
+              <Text style={styles.destructiveButtonText}>
+                {tr(locale, 'resetLocalProgress')}
+              </Text>
             </Pressable>
-          ))}
-        </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={tr(locale, 'fullResetIncludingSettings')}
+              style={styles.destructiveButton}
+              onPress={() => askReset(true)}
+              disabled={busy}
+            >
+              <Text style={styles.destructiveButtonText}>
+                {tr(locale, 'fullResetIncludingSettings')}
+              </Text>
+            </Pressable>
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {tr(locale, 'appInformation')}
-          </Text>
-          <Text style={styles.versionText}>{mobileRuntimeConfig.appName}</Text>
-          {metadataLines.map((line) => (
-            <Text key={line.label} style={styles.versionText}>
-              {line.label}: {line.value}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {tr(locale, 'legalAndSupport')}
             </Text>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+            {legalItems.map((item) => (
+              <Pressable
+                key={item.key}
+                accessibilityRole="button"
+                accessibilityLabel={item.title}
+                style={styles.linkButton}
+                onPress={() => void openLink(item.url)}
+              >
+                <Text style={styles.linkButtonText}>{item.title}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {tr(locale, 'appInformation')}
+            </Text>
+            <Text style={styles.versionText}>
+              {mobileRuntimeConfig.appName}
+            </Text>
+            {metadataLines.map((line) => (
+              <Text key={line.label} style={styles.versionText}>
+                {line.label}: {line.value}
+              </Text>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </MobileShell>
   );
 }
 

@@ -290,7 +290,7 @@ export function NetworkTouchLayer({
           <Pressable
             onPress={() => onNodePress(node.id)}
             hitSlop={6}
-            style={[
+            style={({ pressed }) => [
               styles.node,
               {
                 left: node.x - 22,
@@ -299,6 +299,9 @@ export function NetworkTouchLayer({
                   selectedNodeId === node.id ? '#9BE9FF' : 'transparent',
                 backgroundColor:
                   focusedNodeId === node.id ? '#8DA2FF1C' : 'transparent',
+                opacity: pressed ? 0.88 : 1,
+                transform:
+                  reducedMotion || !pressed ? undefined : [{ scale: 0.97 }],
               },
               selectedNodeId === node.id && styles.nodeSelected,
               focusedNodeId === node.id && styles.nodeFocused,
@@ -311,13 +314,16 @@ export function NetworkTouchLayer({
           key={link.id}
           onPress={() => onLinkPress(link.id)}
           hitSlop={8}
-          style={[
+          style={({ pressed }) => [
             styles.link,
             {
               left: link.x - 18,
               top: link.y - 18,
               borderColor:
                 selectedLinkId === link.id ? '#89B5FF' : 'transparent',
+              opacity: pressed ? 0.84 : 1,
+              transform:
+                reducedMotion || !pressed ? undefined : [{ scale: 0.98 }],
             },
             selectedLinkId === link.id && styles.linkSelected,
             focusedLinkId === link.id && styles.linkFocused,

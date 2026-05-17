@@ -27,6 +27,15 @@ export interface PersistenceWritePlan {
   epoch: number;
 }
 
+export function shouldAutoStartSession(params: {
+  tutorialLoaded: boolean;
+  session: SessionState | null;
+  endedVisible: boolean;
+}): boolean {
+  const { tutorialLoaded, session, endedVisible } = params;
+  return tutorialLoaded && session === null && !endedVisible;
+}
+
 export function createInitialTransientUiState(): GameTransientUiState {
   return {
     selectedNodeId: null,

@@ -4,6 +4,7 @@ import {
   AppState,
   Easing,
   Platform,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -72,6 +73,7 @@ import {
 } from '../../shared/storage/resumeSavePolicy';
 import { useAppSettingsStore } from '../../state/appSettingsStore';
 import { getSignalAssetSource } from '../../shared/assets/registry';
+import { shouldAutoStartSession } from './gameResumeWiring';
 
 interface EndedPayload {
   summary: SessionSummary;
@@ -153,6 +155,7 @@ export function GameScreen(): React.JSX.Element {
   const invalidShake = useRef(new Animated.Value(0)).current;
   const focusGlow = useRef(new Animated.Value(0)).current;
   const entryAtmosphereFade = useRef(new Animated.Value(1)).current;
+  const entryProgress = useRef(new Animated.Value(0)).current;
 
   const feedbackSettings: FeedbackSettings = useMemo(
     () => ({
@@ -181,10 +184,18 @@ export function GameScreen(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!tutorialLoaded || session) return;
+    if (
+      !shouldAutoStartSession({
+        tutorialLoaded,
+        session,
+        endedVisible: Boolean(ended),
+      })
+    ) {
+      return;
+    }
     const seedPrefix = tutorialSeen ? 'run' : 'intro';
     startSession(`${seedPrefix}-${Date.now()}`, 'mainRun');
-  }, [session, startSession, tutorialLoaded, tutorialSeen]);
+  }, [ended, session, startSession, tutorialLoaded, tutorialSeen]);
 
   useGameLoop(Boolean(session), reducedMotion ? 800 : 500, tick);
 
@@ -386,16 +397,26 @@ export function GameScreen(): React.JSX.Element {
   useEffect(() => {
     if (reducedMotion) {
       entryAtmosphereFade.setValue(0);
+      entryProgress.setValue(1);
       return;
     }
     entryAtmosphereFade.setValue(1);
-    Animated.timing(entryAtmosphereFade, {
-      toValue: 0,
-      duration: 320,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [entryAtmosphereFade, reducedMotion]);
+    entryProgress.setValue(0);
+    Animated.parallel([
+      Animated.timing(entryAtmosphereFade, {
+        toValue: 0,
+        duration: 360,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(entryProgress, {
+        toValue: 1,
+        duration: 520,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [entryAtmosphereFade, entryProgress, reducedMotion]);
 
   useEffect(() => {
     if (!pulseNodeId && !pulseLinkId) return;
@@ -464,6 +485,30 @@ export function GameScreen(): React.JSX.Element {
     });
   }, [playtestLabOpen]);
 
+  useEffect(() => {
+    if (!__DEV__ || !playtestLabOpen || Platform.OS !== 'web') return;
+    const eventTarget = globalThis as unknown as {
+      addEventListener?: (
+        type: string,
+        listener: (event: unknown) => void,
+      ) => void;
+      removeEventListener?: (
+        type: string,
+        listener: (event: unknown) => void,
+      ) => void;
+    };
+    if (!eventTarget.addEventListener || !eventTarget.removeEventListener) {
+      return;
+    }
+    const onKeyDown = (event: unknown) => {
+      const key = (event as { key?: string }).key;
+      if (key !== 'Escape') return;
+      setPlaytestLabOpen(false);
+    };
+    eventTarget.addEventListener('keydown', onKeyDown);
+    return () => eventTarget.removeEventListener?.('keydown', onKeyDown);
+  }, [playtestLabOpen]);
+
   const tutorialStep: 0 | 1 | 2 | 3 = useMemo(() => {
     if (!tutorialProgress.tappedNode) return 0;
     if (!tutorialProgress.stabilized) return 1;
@@ -501,6 +546,26 @@ export function GameScreen(): React.JSX.Element {
   const focusHintOpacity = focusGlow.interpolate({
     inputRange: [0, 1],
     outputRange: [0.72, 1],
+  });
+  const entryShellOpacity = entryProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.75, 1],
+  });
+  const entryShellTranslateY = entryProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [5, 0],
+  });
+  const entryCoreEchoOpacity = entryProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.24, 0],
+  });
+  const hudEntryOpacity = entryProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.6, 1],
+  });
+  const hudEntryTranslateY = entryProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [6, 0],
   });
   const signalNodeGlow = getSignalAssetSource('signalNodeGlow');
   const sceneState: 'booting' | 'live' | 'summary' = ended
@@ -755,6 +820,15 @@ export function GameScreen(): React.JSX.Element {
           />
 
           <View pointerEvents="box-none" style={styles.overlay}>
+            {!reducedMotion ? (
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.entryCoreEcho,
+                  { opacity: entryCoreEchoOpacity },
+                ]}
+              />
+            ) : null}
             {__DEV__ ? (
               <DevPerformanceOverlay
                 nodeCount={snapshot.nodes.length}
@@ -774,9 +848,20 @@ export function GameScreen(): React.JSX.Element {
             ) : null}
             <View pointerEvents="none" style={styles.atmosphereVeilTop} />
             <View pointerEvents="none" style={styles.atmosphereVeilBottom} />
-            <View style={styles.topStack}>
+            <Animated.View
+              pointerEvents="box-none"
+              style={[
+                styles.topStack,
+                reducedMotion
+                  ? undefined
+                  : {
+                      opacity: hudEntryOpacity,
+                      transform: [{ translateY: hudEntryTranslateY }],
+                    },
+              ]}
+            >
               {showOnboardingGuidance && !sessionBooting ? (
-                <View style={styles.onboardingGuide}>
+                <View pointerEvents="none" style={styles.onboardingGuide}>
                   <Text style={styles.onboardingLine}>
                     {tr(locale, onboardingHintKey ?? 'keepSignalAlive')}
                   </Text>
@@ -792,9 +877,20 @@ export function GameScreen(): React.JSX.Element {
               />
 
               <CollapseMeter locale={locale} stability={snapshot.stability} />
-            </View>
+            </Animated.View>
 
-            <View style={styles.bottomStack}>
+            <Animated.View
+              pointerEvents="box-none"
+              style={[
+                styles.bottomStack,
+                reducedMotion
+                  ? undefined
+                  : {
+                      opacity: entryShellOpacity,
+                      transform: [{ translateY: entryShellTranslateY }],
+                    },
+              ]}
+            >
               {sessionBooting ? (
                 <View style={styles.bootState}>
                   <Text style={styles.bootLine}>{tr(locale, 'appTitle')}</Text>
@@ -833,6 +929,7 @@ export function GameScreen(): React.JSX.Element {
               />
 
               <Animated.View
+                pointerEvents="box-none"
                 style={
                   reducedMotion
                     ? undefined
@@ -870,6 +967,7 @@ export function GameScreen(): React.JSX.Element {
               </Animated.View>
               {actionFeedbackKey ? (
                 <Animated.View
+                  pointerEvents="none"
                   style={[
                     styles.actionFeedback,
                     reducedMotion
@@ -887,6 +985,7 @@ export function GameScreen(): React.JSX.Element {
               ) : null}
               {riskSnapshot?.mostCriticalNodeId && !sessionBooting ? (
                 <Animated.View
+                  pointerEvents="none"
                   style={[
                     styles.focusHint,
                     reducedMotion ? undefined : { opacity: focusHintOpacity },
@@ -902,93 +1001,104 @@ export function GameScreen(): React.JSX.Element {
                   </Text>
                 </Animated.View>
               ) : null}
-            </View>
+            </Animated.View>
           </View>
-        </View>
 
-        {ended ? (
-          <SessionSummaryPanel
-            locale={locale}
-            summary={ended.summary}
-            report={ended.report}
-            bestScore={bestScore}
-            isNewBest={ended.isNewBest}
-            onRestart={async () => {
-              if (summaryActionLocked) return;
-              setSummaryActionLocked(true);
-              track({ name: 'session_restarted', timestamp: Date.now() });
-              persistenceEpochRef.current += 1;
-              await clearResumableSessionSnapshot();
-              lastSavedSnapshotRef.current = null;
-              lastSavedFingerprintRef.current = null;
-              warningTrackedRef.current = false;
-              clearSelection();
-              setDragPreview(null);
-              setPulseNodeId(null);
-              setPulseLinkId(null);
-              setActionFeedbackKey(null);
-              setEnded(null);
-              telemetryRef.current = null;
-              setTutorialProgress({
-                tappedNode: false,
-                stabilized: false,
-                draggedConnect: false,
-                repaired: false,
-              });
-              const seedPrefix = tutorialSeen ? 'run' : 'intro';
-              useGameStore
-                .getState()
-                .startSession(`${seedPrefix}-${Date.now()}`, 'mainRun');
-              await onDragStart(feedbackSettings);
-              await onActionSuccess(feedbackSettings, 'session_restarted');
-              setSummaryActionLocked(false);
-            }}
-            onHome={() => {
-              if (summaryActionLocked) return;
-              setSummaryActionLocked(true);
-              persistenceEpochRef.current += 1;
-              void clearResumableSessionSnapshot();
-              lastSavedSnapshotRef.current = null;
-              lastSavedFingerprintRef.current = null;
-              router.replace('/');
-            }}
-            onOpenPlaytestLab={
-              __DEV__
-                ? () => {
-                    setPlaytestLabOpen(true);
-                  }
-                : undefined
-            }
-          />
-        ) : null}
-        {__DEV__ && playtestLabOpen ? (
-          <PlaytestLabPanel
-            locale={locale}
-            reports={playtestReports}
-            runtimeVersion="dev-local-v1"
-            activeTuningProfileTag={activeTuningProfileTag}
-            savedTuningTags={savedTuningTags}
-            experimentNotesByTag={experimentNotesByTag}
-            onClose={() => setPlaytestLabOpen(false)}
-            onClearReports={async () => {
-              await clearPostRunTuningReportHistory();
-              setPlaytestReports([]);
-            }}
-            onExportReports={async () => exportAllPostRunTuningReportsJson()}
-            onChangeActiveTag={async (tag) => {
-              setActiveTuningProfileTag(tag);
-              await saveCurrentTuningProfileTag(tag);
-            }}
-            onSaveSavedTags={async (tags) => {
-              setSavedTuningTags(tags);
-              await saveSavedTuningProfileTags(tags);
-            }}
-            onSaveExperimentNote={async (tag, note) => {
-              const next = await saveExperimentNoteByTag(tag, note);
-              setExperimentNotesByTag(next);
-            }}
-          />
-        ) : null}
+          {ended ? (
+            <SessionSummaryPanel
+              locale={locale}
+              summary={ended.summary}
+              report={ended.report}
+              bestScore={bestScore}
+              isNewBest={ended.isNewBest}
+              onRestart={async () => {
+                if (summaryActionLocked) return;
+                setSummaryActionLocked(true);
+                track({ name: 'session_restarted', timestamp: Date.now() });
+                persistenceEpochRef.current += 1;
+                await clearResumableSessionSnapshot();
+                lastSavedSnapshotRef.current = null;
+                lastSavedFingerprintRef.current = null;
+                warningTrackedRef.current = false;
+                clearSelection();
+                setDragPreview(null);
+                setPulseNodeId(null);
+                setPulseLinkId(null);
+                setActionFeedbackKey(null);
+                setEnded(null);
+                setPlaytestLabOpen(false);
+                telemetryRef.current = null;
+                setTutorialProgress({
+                  tappedNode: false,
+                  stabilized: false,
+                  draggedConnect: false,
+                  repaired: false,
+                });
+                const seedPrefix = tutorialSeen ? 'run' : 'intro';
+                useGameStore
+                  .getState()
+                  .startSession(`${seedPrefix}-${Date.now()}`, 'mainRun');
+                await onDragStart(feedbackSettings);
+                await onActionSuccess(feedbackSettings, 'session_restarted');
+                setSummaryActionLocked(false);
+              }}
+              onHome={() => {
+                if (summaryActionLocked) return;
+                setSummaryActionLocked(true);
+                persistenceEpochRef.current += 1;
+                void clearResumableSessionSnapshot();
+                lastSavedSnapshotRef.current = null;
+                lastSavedFingerprintRef.current = null;
+                router.replace('/');
+              }}
+              onOpenPlaytestLab={
+                __DEV__
+                  ? () => {
+                      setPlaytestLabOpen(true);
+                    }
+                  : undefined
+              }
+            />
+          ) : null}
+          {__DEV__ && playtestLabOpen ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={tr(locale, 'cancel')}
+                style={styles.playtestBackdrop}
+                onPress={() => setPlaytestLabOpen(false)}
+              />
+              <PlaytestLabPanel
+                locale={locale}
+                reports={playtestReports}
+                runtimeVersion="dev-local-v1"
+                activeTuningProfileTag={activeTuningProfileTag}
+                savedTuningTags={savedTuningTags}
+                experimentNotesByTag={experimentNotesByTag}
+                onClose={() => setPlaytestLabOpen(false)}
+                onClearReports={async () => {
+                  await clearPostRunTuningReportHistory();
+                  setPlaytestReports([]);
+                }}
+                onExportReports={async () =>
+                  exportAllPostRunTuningReportsJson()
+                }
+                onChangeActiveTag={async (tag) => {
+                  setActiveTuningProfileTag(tag);
+                  await saveCurrentTuningProfileTag(tag);
+                }}
+                onSaveSavedTags={async (tags) => {
+                  setSavedTuningTags(tags);
+                  await saveSavedTuningProfileTags(tags);
+                }}
+                onSaveExperimentNote={async (tag, note) => {
+                  const next = await saveExperimentNoteByTag(tag, note);
+                  setExperimentNotesByTag(next);
+                }}
+              />
+            </>
+          ) : null}
+        </View>
       </SafeAreaView>
     </SceneFade>
   );
@@ -1028,6 +1138,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#78D7FF1F',
     zIndex: 8,
   },
+  entryCoreEcho: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    alignSelf: 'center',
+    top: '24%',
+    backgroundColor: '#7AD9FF1A',
+  },
   atmosphereVeilTop: {
     position: 'absolute',
     width: '122%',
@@ -1045,10 +1164,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#0E1F3F20',
   },
   topStack: {
-    gap: 7,
+    gap: 10,
   },
   bottomStack: {
-    gap: 7,
+    gap: 9,
   },
   bootState: {
     alignSelf: 'center',
@@ -1077,12 +1196,12 @@ const styles = StyleSheet.create({
   onboardingGuide: {
     alignSelf: 'center',
     maxWidth: 320,
-    backgroundColor: '#0B1832C4',
+    backgroundColor: '#0D213AB8',
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#42669366',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    borderColor: '#5781AA4A',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     gap: 2,
   },
   onboardingLine: {
@@ -1096,10 +1215,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#0D1A35BF',
+    backgroundColor: '#0F233AB8',
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#40659468',
+    borderColor: '#5E8FB34A',
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
@@ -1129,10 +1248,10 @@ const styles = StyleSheet.create({
   },
   actionFeedback: {
     alignSelf: 'center',
-    backgroundColor: '#0F2A49BC',
+    backgroundColor: '#12304AB3',
     borderRadius: designTokens.radii.round,
     borderWidth: 1,
-    borderColor: '#4A72A055',
+    borderColor: '#658FB04A',
     paddingVertical: designTokens.spacing.xs,
     paddingHorizontal: designTokens.spacing.sm,
   },
@@ -1148,5 +1267,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.55,
     textTransform: 'uppercase',
+  },
+  playtestBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#040914A8',
+    zIndex: 19,
   },
 });

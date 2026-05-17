@@ -31,8 +31,22 @@ export function GlowLine({
           p1={{ x: x1, y: y1 }}
           p2={{ x: (x1 + x2) / 2 - 6, y: (y1 + y2) / 2 - 6 }}
           color={color}
+          strokeWidth={highlight ? 4 : 2.8}
+          opacity={highlight ? 0.08 : 0.05}
+        />
+        <Line
+          p1={{ x: x1, y: y1 }}
+          p2={{ x: (x1 + x2) / 2 - 6, y: (y1 + y2) / 2 - 6 }}
+          color={color}
           strokeWidth={highlight ? 1.6 : 1}
           opacity={highlight ? 0.42 : 0.16}
+        />
+        <Line
+          p1={{ x: (x1 + x2) / 2 + 6, y: (y1 + y2) / 2 + 6 }}
+          p2={{ x: x2, y: y2 }}
+          color={color}
+          strokeWidth={highlight ? 4 : 2.8}
+          opacity={highlight ? 0.08 : 0.05}
         />
         <Line
           p1={{ x: (x1 + x2) / 2 + 6, y: (y1 + y2) / 2 + 6 }}
@@ -48,6 +62,13 @@ export function GlowLine({
   if (weak) {
     return (
       <>
+        <Line
+          p1={{ x: x1, y: y1 }}
+          p2={{ x: x2, y: y2 }}
+          color={color}
+          strokeWidth={highlight ? 3.2 : 2.2}
+          opacity={highlight ? 0.13 : 0.08}
+        />
         <Line
           p1={{ x: x1, y: y1 }}
           p2={{ x: (x1 + x2) / 2, y: (y1 + y2) / 2 }}
@@ -68,6 +89,13 @@ export function GlowLine({
 
   return (
     <>
+      <Line
+        p1={{ x: x1, y: y1 }}
+        p2={{ x: x2, y: y2 }}
+        color={color}
+        strokeWidth={highlight ? 4.2 : 3.1}
+        opacity={highlight ? 0.16 : 0.1}
+      />
       {critical ? (
         <Line
           p1={{ x: x1, y: y1 }}
@@ -81,8 +109,8 @@ export function GlowLine({
         p1={{ x: x1, y: y1 }}
         p2={{ x: x2, y: y2 }}
         color={color}
-        strokeWidth={highlight ? 2.4 : 1.9}
-        opacity={highlight ? 0.88 : 0.68}
+        strokeWidth={highlight ? 2.2 : 1.75}
+        opacity={highlight ? 0.8 : 0.6}
       />
     </>
   );

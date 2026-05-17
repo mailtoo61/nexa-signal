@@ -8,6 +8,7 @@ import {
   handleSessionLifecycleChange,
   handleTerminalClear,
   planSessionPersistenceWrite,
+  shouldAutoStartSession,
 } from './gameResumeWiring';
 
 describe('game resume wiring', () => {
@@ -116,5 +117,23 @@ describe('game resume wiring', () => {
 
     expect(first.shouldResetTransientUi).toBe(true);
     expect(second.shouldResetTransientUi).toBe(false);
+  });
+
+  it('terminal summary visibility blocks auto-start until player chooses action', () => {
+    expect(
+      shouldAutoStartSession({
+        tutorialLoaded: true,
+        session: null,
+        endedVisible: true,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldAutoStartSession({
+        tutorialLoaded: true,
+        session: null,
+        endedVisible: false,
+      }),
+    ).toBe(true);
   });
 });

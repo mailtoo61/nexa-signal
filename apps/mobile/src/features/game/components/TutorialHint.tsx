@@ -25,7 +25,7 @@ export function TutorialHint({
 }: TutorialHintProps) {
   if (!visible) return null;
   return (
-    <GlassPanel compact style={styles.root}>
+    <GlassPanel pointerEvents="none" compact style={styles.root}>
       <Text numberOfLines={1} style={styles.text}>
         {tr(locale, overrideKey ?? keys[step])}
       </Text>

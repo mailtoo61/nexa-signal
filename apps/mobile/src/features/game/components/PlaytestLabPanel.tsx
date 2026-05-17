@@ -172,7 +172,17 @@ export function PlaytestLabPanel({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.title}>{tr(locale, 'devPlaytestLab')}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{tr(locale, 'devPlaytestLab')}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={tr(locale, 'cancel')}
+          style={styles.closeButton}
+          onPress={onClose}
+        >
+          <Text style={styles.closeButtonText}>{tr(locale, 'cancel')}</Text>
+        </Pressable>
+      </View>
       <Text style={styles.localOnly}>{tr(locale, 'devLocalOnly')}</Text>
 
       <View style={styles.tagRow}>
@@ -564,7 +574,7 @@ export function PlaytestLabPanel({
           <Text style={styles.buttonText}>{tr(locale, 'devClearReports')}</Text>
         </Pressable>
         <Pressable style={styles.button} onPress={onClose}>
-          <Text style={styles.buttonText}>{tr(locale, 'home')}</Text>
+          <Text style={styles.buttonText}>{tr(locale, 'cancel')}</Text>
         </Pressable>
       </View>
 
@@ -594,8 +604,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#0B1226F0',
     padding: designTokens.spacing.lg,
     gap: designTokens.spacing.sm,
+    zIndex: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: designTokens.spacing.sm,
   },
   title: { color: '#DDEBFF', fontSize: 20, fontWeight: '700' },
+  closeButton: {
+    minHeight: 34,
+    borderRadius: designTokens.radii.md,
+    borderWidth: 1,
+    borderColor: '#6FAFE6',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  closeButtonText: {
+    color: '#E4F0FF',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   localOnly: { color: '#95B6E8', fontSize: 12 },
   empty: { color: '#C8DBFF', fontSize: 14 },
   scroll: { flex: 1 },

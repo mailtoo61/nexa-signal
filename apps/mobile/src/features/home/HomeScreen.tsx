@@ -116,6 +116,8 @@ interface SecondaryCard {
   comingSoon: boolean;
 }
 
+type BottomNavItemIcon = 'home' | 'networks' | 'themes' | 'profile';
+
 export function HomeScreen(): React.JSX.Element {
   const locale = useAppSettingsStore((state) => state.selectedLanguage);
   const audioEnabled = useAppSettingsStore((state) => state.audioEnabled);
@@ -279,19 +281,20 @@ export function HomeScreen(): React.JSX.Element {
   });
   const isCompactLayout = width < 390;
   const isDesktopWeb = Platform.OS === 'web' && width >= 900;
+  const isWeb = Platform.OS === 'web';
   const frameWidth = isDesktopWeb ? Math.min(460, width - 48) : width;
   const frameHeight = isDesktopWeb ? Math.min(920, height - 40) : height;
-  const heroVisualSize = Math.max(168, Math.min(196, frameWidth - 164));
-  const heroHaloOuterSize = Math.max(192, heroVisualSize - 26);
-  const heroHaloMidSize = Math.max(172, heroVisualSize - 52);
-  const heroHaloInnerSize = Math.max(154, heroVisualSize - 78);
-  const heroCoreSize = Math.max(138, heroVisualSize - 94);
+  const heroVisualSize = Math.max(140, Math.min(164, frameWidth - 196));
+  const heroHaloOuterSize = Math.max(164, heroVisualSize - 16);
+  const heroHaloMidSize = Math.max(150, heroVisualSize - 36);
+  const heroHaloInnerSize = Math.max(136, heroVisualSize - 56);
+  const heroCoreSize = Math.max(118, heroVisualSize - 72);
   const ctaWidth = Math.max(248, Math.min(322, frameWidth - 44));
   const ctaRingWidth = ctaWidth + 12;
   const moduleCardMinWidth = frameWidth - designTokens.spacing.lg * 2;
   const navReservedHeight = 92;
-  const heroZoneHeight = Math.floor(frameHeight * 0.28);
-  const titleCtaZoneHeight = Math.floor(frameHeight * 0.24);
+  const heroZoneHeight = Math.floor(frameHeight * 0.25);
+  const titleCtaZoneHeight = Math.floor(frameHeight * 0.26);
   const cardsZoneHeight = Math.floor(frameHeight * 0.3);
   const signalNoiseOverlay = getSignalAssetSource('signalNoiseOverlay');
   const signalRingGlow = getSignalAssetSource('signalRingGlow');
@@ -302,6 +305,106 @@ export function HomeScreen(): React.JSX.Element {
     zen: getSignalAssetSource('iconZenFlow'),
     archive: getSignalAssetSource('iconArchive'),
   } as const;
+  const renderBottomNavIcon = (
+    icon: BottomNavItemIcon,
+    active: boolean,
+  ): React.JSX.Element => (
+    <View style={styles.bottomNavIconWrap}>
+      {icon === 'home' ? (
+        <>
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconHomeRoof,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconHomeBody,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+        </>
+      ) : null}
+      {icon === 'networks' ? (
+        <>
+          <View
+            style={[
+              styles.bottomNavIconDot,
+              styles.bottomNavIconNetworkDotTop,
+              active && styles.bottomNavIconDotActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconDot,
+              styles.bottomNavIconNetworkDotLeft,
+              active && styles.bottomNavIconDotActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconDot,
+              styles.bottomNavIconNetworkDotRight,
+              active && styles.bottomNavIconDotActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconNetworkLinkLeft,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconNetworkLinkRight,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+        </>
+      ) : null}
+      {icon === 'themes' ? (
+        <>
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconThemesMain,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconThemesSub,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+        </>
+      ) : null}
+      {icon === 'profile' ? (
+        <>
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconProfileHead,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomNavIconStroke,
+              styles.bottomNavIconProfileBody,
+              active && styles.bottomNavIconStrokeActive,
+            ]}
+          />
+        </>
+      ) : null}
+    </View>
+  );
 
   return (
     <SceneFade>
@@ -351,156 +454,177 @@ export function HomeScreen(): React.JSX.Element {
             <View
               style={[
                 styles.contentStack,
-                { paddingBottom: navReservedHeight },
+                {
+                  paddingBottom: navReservedHeight,
+                  paddingTop: isWeb ? 0 : 2,
+                },
               ]}
             >
-              <View style={[styles.heroZone, { minHeight: heroZoneHeight }]}>
-                <Animated.View
-                  style={[
-                    styles.heroVisual,
-                    { width: heroVisualSize, height: heroVisualSize },
-                    reducedMotion
-                      ? null
-                      : {
-                          transform: [
-                            { translateY: driftY },
-                            { translateX: driftX },
-                            { rotate: heroTilt },
-                          ],
-                        },
-                  ]}
-                >
+              <View
+                style={[
+                  styles.heroZone,
+                  { minHeight: heroZoneHeight },
+                  isWeb && styles.heroZoneWebTight,
+                ]}
+              >
+                <View style={styles.heroMaskWrap}>
                   <Animated.View
                     style={[
-                      styles.heroHaloOuter,
-                      {
-                        width: heroHaloOuterSize,
-                        height: heroHaloOuterSize,
-                        borderRadius: heroHaloOuterSize / 2,
-                      },
+                      styles.heroVisual,
+                      { width: heroVisualSize, height: heroVisualSize },
                       reducedMotion
                         ? null
                         : {
-                            transform: [{ scale: pulseScale }],
-                            opacity: pulseOpacity,
+                            transform: [
+                              { translateY: driftY },
+                              { translateX: driftX },
+                              { rotate: heroTilt },
+                            ],
                           },
                     ]}
-                  />
-                  {signalEnergyShell ? (
-                    <Image
-                      source={signalEnergyShell}
-                      resizeMode="contain"
-                      style={[
-                        styles.heroAssetEnergyShell,
-                        {
-                          width: heroHaloOuterSize + 44,
-                          height: heroHaloOuterSize + 44,
-                        },
-                      ]}
-                    />
-                  ) : null}
-                  <View
-                    style={[
-                      styles.heroShellAtmosphereVeil,
-                      {
-                        width: heroHaloOuterSize + 56,
-                        height: heroHaloOuterSize + 56,
-                        borderRadius: (heroHaloOuterSize + 56) / 2,
-                      },
-                    ]}
-                  />
-                  {signalRingGlow ? (
-                    <Image
-                      source={signalRingGlow}
-                      resizeMode="contain"
-                      style={[
-                        styles.heroAssetRingGlow,
-                        {
-                          width: heroHaloInnerSize + 40,
-                          height: heroHaloInnerSize + 40,
-                        },
-                      ]}
-                    />
-                  ) : null}
-                  <View
-                    style={[
-                      styles.heroGlowCyan,
-                      {
-                        width: heroHaloOuterSize + 36,
-                        height: heroHaloOuterSize + 36,
-                        borderRadius: (heroHaloOuterSize + 36) / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroGlowViolet,
-                      {
-                        width: heroHaloInnerSize + 30,
-                        height: heroHaloInnerSize + 30,
-                        borderRadius: (heroHaloInnerSize + 30) / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroHaloInner,
-                      {
-                        width: heroHaloInnerSize,
-                        height: heroHaloInnerSize,
-                        borderRadius: heroHaloInnerSize / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroHaloMid,
-                      {
-                        width: heroHaloMidSize,
-                        height: heroHaloMidSize,
-                        borderRadius: heroHaloMidSize / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroSignatureArcOuter,
-                      {
-                        width: heroHaloMidSize + 14,
-                        height: heroHaloMidSize + 14,
-                        borderRadius: (heroHaloMidSize + 14) / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroSignatureArcInner,
-                      {
-                        width: heroHaloInnerSize + 10,
-                        height: heroHaloInnerSize + 10,
-                        borderRadius: (heroHaloInnerSize + 10) / 2,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.heroCore,
-                      {
-                        width: heroCoreSize,
-                        height: heroCoreSize,
-                        borderRadius: heroCoreSize / 2,
-                      },
-                    ]}
                   >
-                    {signalHeroCore ? (
+                    <Animated.View
+                      style={[
+                        styles.heroHaloOuter,
+                        {
+                          width: heroHaloOuterSize,
+                          height: heroHaloOuterSize,
+                          borderRadius: heroHaloOuterSize / 2,
+                          top: 0,
+                        },
+                        reducedMotion
+                          ? null
+                          : {
+                              transform: [{ scale: pulseScale }],
+                              opacity: pulseOpacity,
+                            },
+                      ]}
+                    />
+                    {signalEnergyShell ? (
                       <Image
-                        source={signalHeroCore}
+                        source={signalEnergyShell}
                         resizeMode="contain"
-                        style={styles.heroCoreAsset}
+                        style={[
+                          styles.heroAssetEnergyShell,
+                          {
+                            width: heroHaloOuterSize + 30,
+                            height: heroHaloOuterSize + 30,
+                            top: 0,
+                          },
+                        ]}
                       />
                     ) : null}
-                  </View>
-                </Animated.View>
+                    <View
+                      style={[
+                        styles.heroShellAtmosphereVeil,
+                        {
+                          width: heroHaloOuterSize + 40,
+                          height: heroHaloOuterSize + 40,
+                          borderRadius: (heroHaloOuterSize + 40) / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    {signalRingGlow ? (
+                      <Image
+                        source={signalRingGlow}
+                        resizeMode="contain"
+                        style={[
+                          styles.heroAssetRingGlow,
+                          {
+                            width: heroHaloInnerSize + 32,
+                            height: heroHaloInnerSize + 32,
+                            top: 0,
+                          },
+                        ]}
+                      />
+                    ) : null}
+                    <View
+                      style={[
+                        styles.heroGlowCyan,
+                        {
+                          width: heroHaloOuterSize + 24,
+                          height: heroHaloOuterSize + 24,
+                          borderRadius: (heroHaloOuterSize + 24) / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroGlowViolet,
+                        {
+                          width: heroHaloInnerSize + 20,
+                          height: heroHaloInnerSize + 20,
+                          borderRadius: (heroHaloInnerSize + 20) / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroHaloInner,
+                        {
+                          width: heroHaloInnerSize,
+                          height: heroHaloInnerSize,
+                          borderRadius: heroHaloInnerSize / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroHaloMid,
+                        {
+                          width: heroHaloMidSize,
+                          height: heroHaloMidSize,
+                          borderRadius: heroHaloMidSize / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroSignatureArcOuter,
+                        {
+                          width: heroHaloMidSize + 12,
+                          height: heroHaloMidSize + 12,
+                          borderRadius: (heroHaloMidSize + 12) / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroSignatureArcInner,
+                        {
+                          width: heroHaloInnerSize + 8,
+                          height: heroHaloInnerSize + 8,
+                          borderRadius: (heroHaloInnerSize + 8) / 2,
+                          top: 0,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.heroCore,
+                        {
+                          width: heroCoreSize,
+                          height: heroCoreSize,
+                          borderRadius: heroCoreSize / 2,
+                        },
+                      ]}
+                    >
+                      {signalHeroCore ? (
+                        <Image
+                          source={signalHeroCore}
+                          resizeMode="contain"
+                          style={styles.heroCoreAsset}
+                        />
+                      ) : null}
+                    </View>
+                  </Animated.View>
+                </View>
               </View>
 
               <View
@@ -532,8 +656,8 @@ export function HomeScreen(): React.JSX.Element {
                     <GlowRing
                       size={ctaRingWidth}
                       color="#6FE5FF"
-                      opacity={0.9}
-                      borderWidth={1.3}
+                      opacity={0.82}
+                      borderWidth={1.2}
                     />
                   </Animated.View>
                   <Animated.View
@@ -721,6 +845,7 @@ export function HomeScreen(): React.JSX.Element {
                     ]}
                   />
                 ) : null}
+                {renderBottomNavIcon('home', true)}
                 <Text
                   style={[styles.bottomPillText, styles.bottomPillActiveText]}
                 >
@@ -747,6 +872,7 @@ export function HomeScreen(): React.JSX.Element {
                   setModuleStatusKey('linkComingSoonTitle');
                 }}
               >
+                {renderBottomNavIcon('networks', false)}
                 <Text style={[styles.bottomPillText]}>
                   {tr(locale, 'networks')}
                 </Text>
@@ -771,6 +897,7 @@ export function HomeScreen(): React.JSX.Element {
                   setModuleStatusKey('linkComingSoonTitle');
                 }}
               >
+                {renderBottomNavIcon('themes', false)}
                 <Text style={[styles.bottomPillText]}>
                   {tr(locale, 'themes')}
                 </Text>
@@ -792,9 +919,10 @@ export function HomeScreen(): React.JSX.Element {
                     enabled: audioEnabled,
                     reducedFeedback: reducedMotion,
                   });
-                  router.push('/settings');
+                  router.push('/profile');
                 }}
               >
+                {renderBottomNavIcon('profile', false)}
                 <Text style={[styles.bottomPillText]}>
                   {tr(locale, 'profile')}
                 </Text>
@@ -880,7 +1008,8 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     paddingHorizontal: designTokens.spacing.lg,
-    paddingTop: designTokens.spacing.xl + 2,
+    paddingTop:
+      Platform.OS === 'web' ? designTokens.spacing.xs : designTokens.spacing.lg,
     paddingBottom: designTokens.spacing.lg,
   },
   enterTransitionVeil: {
@@ -894,6 +1023,12 @@ const styles = StyleSheet.create({
   heroZone: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
+    paddingTop: 4,
+  },
+  heroZoneWebTight: {
+    justifyContent: 'flex-start',
+    paddingTop: 2,
   },
   titleCtaZone: {
     alignItems: 'center',
@@ -903,22 +1038,30 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   breathingSpace: { flex: 1 },
+  heroMaskWrap: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+    paddingTop: 6,
+    paddingBottom: 2,
+  },
   heroVisual: { alignItems: 'center', justifyContent: 'center' },
   heroAssetEnergyShell: {
     position: 'absolute',
-    opacity: 0.84,
+    opacity: 0.72,
     zIndex: 1,
   },
   heroShellAtmosphereVeil: {
     position: 'absolute',
-    backgroundColor: '#69D8FF10',
+    backgroundColor: '#69D8FF0B',
     borderWidth: 1,
-    borderColor: '#8A84FF1A',
+    borderColor: '#8A84FF14',
     zIndex: 1,
   },
   heroAssetRingGlow: {
     position: 'absolute',
-    opacity: 1,
+    opacity: 0.9,
     zIndex: 2,
   },
   heroHaloOuter: {
@@ -956,11 +1099,11 @@ const styles = StyleSheet.create({
   },
   heroGlowCyan: {
     position: 'absolute',
-    backgroundColor: '#3FD9FF08',
+    backgroundColor: '#3FD9FF05',
   },
   heroGlowViolet: {
     position: 'absolute',
-    backgroundColor: '#9A83FF06',
+    backgroundColor: '#9A83FF04',
   },
   heroCore: {
     borderWidth: 1,
@@ -979,7 +1122,7 @@ const styles = StyleSheet.create({
   },
   heroTextBlock: {
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
   },
   heroTitle: {
     color: '#E7F4FF',
@@ -1000,7 +1143,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 14,
   },
   ctaSurface: {
     position: 'absolute',
@@ -1017,9 +1160,9 @@ const styles = StyleSheet.create({
   ctaButton: {
     minWidth: 248,
     minHeight: 74,
-    borderColor: '#A2E8FF',
-    borderWidth: 1.6,
-    backgroundColor: '#123068EE',
+    borderColor: '#B4ECFF',
+    borderWidth: 1.8,
+    backgroundColor: '#12336DEB',
   },
   ctaPulseRing: {
     position: 'absolute',
@@ -1119,7 +1262,9 @@ const styles = StyleSheet.create({
     borderRadius: designTokens.radii.round,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'column',
     paddingHorizontal: 10,
+    gap: 2,
   },
   bottomPillActive: {
     borderRadius: designTokens.radii.round,
@@ -1143,13 +1288,116 @@ const styles = StyleSheet.create({
   },
   bottomPillActiveText: {
     color: '#D9F4FF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    letterSpacing: 1,
+    letterSpacing: 0.9,
   },
   bottomPillText: {
     color: '#87A4C6D9',
-    fontSize: 11,
-    letterSpacing: 0.7,
+    fontSize: 10,
+    letterSpacing: 0.6,
+  },
+  bottomNavIconWrap: {
+    width: 16,
+    height: 14,
+    position: 'relative',
+    marginBottom: 1,
+  },
+  bottomNavIconStroke: {
+    position: 'absolute',
+    borderColor: '#7CA7C9CC',
+    borderWidth: 1,
+    borderRadius: 4,
+  },
+  bottomNavIconStrokeActive: {
+    borderColor: '#BEEFFF',
+  },
+  bottomNavIconDot: {
+    position: 'absolute',
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#7CA7C9CC',
+  },
+  bottomNavIconDotActive: {
+    backgroundColor: '#BEEFFF',
+  },
+  bottomNavIconHomeRoof: {
+    width: 8,
+    height: 8,
+    top: 0,
+    left: 4,
+    borderBottomWidth: 0,
+    borderRightWidth: 0,
+    transform: [{ rotate: '45deg' }],
+  },
+  bottomNavIconHomeBody: {
+    width: 10,
+    height: 7,
+    bottom: 0,
+    left: 3,
+  },
+  bottomNavIconNetworkDotTop: {
+    top: 0,
+    left: 6,
+  },
+  bottomNavIconNetworkDotLeft: {
+    bottom: 1,
+    left: 1,
+  },
+  bottomNavIconNetworkDotRight: {
+    bottom: 1,
+    right: 1,
+  },
+  bottomNavIconNetworkLinkLeft: {
+    width: 6,
+    height: 1,
+    borderWidth: 0,
+    borderTopWidth: 1,
+    left: 2,
+    top: 5,
+    transform: [{ rotate: '-28deg' }],
+  },
+  bottomNavIconNetworkLinkRight: {
+    width: 6,
+    height: 1,
+    borderWidth: 0,
+    borderTopWidth: 1,
+    right: 2,
+    top: 5,
+    transform: [{ rotate: '28deg' }],
+  },
+  bottomNavIconThemesMain: {
+    width: 10,
+    height: 10,
+    left: 3,
+    top: 2,
+    borderRadius: 6,
+  },
+  bottomNavIconThemesSub: {
+    width: 5,
+    height: 5,
+    right: 0,
+    top: 0,
+    borderRadius: 4,
+    backgroundColor: '#102440CC',
+  },
+  bottomNavIconProfileHead: {
+    width: 6,
+    height: 6,
+    left: 5,
+    top: 1,
+    borderRadius: 4,
+  },
+  bottomNavIconProfileBody: {
+    width: 12,
+    height: 6,
+    left: 2,
+    bottom: 1,
+    borderRadius: 6,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    borderBottomLeftRadius: 3,
+    borderBottomRightRadius: 3,
   },
 });

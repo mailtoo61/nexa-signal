@@ -31,17 +31,24 @@ export function SelectionPanel({
 
   return (
     <GlassPanel
+      pointerEvents="box-none"
       style={[styles.root, !hasActions && styles.rootCollapsed]}
       compact
     >
-      <SignalGlassHighlight
-        intensity={0.94}
-        opacity={0.17}
-        borderRadius={10}
-        verticalOffset={-9}
-      />
-      <Text style={styles.title}>{title}</Text>
-      {helperLine ? <Text style={styles.description}>{helperLine}</Text> : null}
+      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+        <SignalGlassHighlight
+          intensity={0.94}
+          opacity={0.17}
+          borderRadius={10}
+          verticalOffset={-9}
+        />
+      </View>
+      <View pointerEvents="none" style={styles.copyBlock}>
+        <Text style={styles.title}>{title}</Text>
+        {helperLine ? (
+          <Text style={styles.description}>{helperLine}</Text>
+        ) : null}
+      </View>
       {hasActions ? (
         <View style={styles.actionsRow}>
           {actions.map((action) => {
@@ -92,6 +99,9 @@ const styles = StyleSheet.create({
   },
   rootCollapsed: {
     paddingVertical: designTokens.spacing.xs,
+  },
+  copyBlock: {
+    gap: 6,
   },
   title: {
     color: '#D8EBFF',

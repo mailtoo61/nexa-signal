@@ -21,15 +21,19 @@ export function GameHud({
 }: GameHudProps) {
   const elapsed = `${survivalSeconds}s`;
   return (
-    <GlassPanel style={styles.root}>
+    <GlassPanel pointerEvents="none" style={styles.root}>
       <SignalGlassHighlight
-        intensity={1}
-        opacity={0.24}
-        borderRadius={10}
-        verticalOffset={-10}
+        intensity={0.9}
+        opacity={0.18}
+        borderRadius={16}
+        verticalOffset={-6}
       />
       <View style={styles.topRow}>
-        <HudChip label={tr(locale, 'stability')} value={stability} />
+        <HudChip
+          label={tr(locale, 'stability')}
+          value={stability}
+          style={styles.stabilityChip}
+        />
         <Text style={styles.objective}>{tr(locale, 'keepSignalAlive')}</Text>
       </View>
       <View style={styles.secondaryRow}>
@@ -49,33 +53,42 @@ export function GameHud({
 
 const styles = StyleSheet.create({
   root: {
-    gap: 5,
+    gap: 8,
     overflow: 'hidden',
-    borderColor: '#7EAED15A',
-    backgroundColor: '#132846AE',
+    borderColor: '#92C9EA3A',
+    backgroundColor: '#10253FAE',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  stabilityChip: {
+    borderRadius: 14,
+    backgroundColor: '#10365852',
+    borderColor: '#A8D7F51F',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 10,
   },
   secondaryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 7,
+    gap: 8,
     justifyContent: 'space-between',
+    paddingTop: 2,
   },
   item: {
-    color: '#D5E9FFDE',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+    color: '#D7EAFFF0',
+    fontSize: 10,
+    fontWeight: '500',
+    letterSpacing: 0.45,
   },
   objective: {
-    color: '#9EC2E8',
+    color: '#A7C9E8D4',
     fontSize: 10,
-    letterSpacing: 0.9,
+    letterSpacing: 0.75,
     textTransform: 'uppercase',
   },
 });

@@ -17,7 +17,7 @@ export function CollapseMeter({ locale, stability }: CollapseMeterProps) {
   const stableValue = Math.max(0, Math.min(100, Math.round(stability)));
 
   return (
-    <GlassPanel compact style={styles.root}>
+    <GlassPanel pointerEvents="none" compact style={styles.root}>
       <SignalGlassHighlight
         intensity={0.86}
         opacity={0.14}

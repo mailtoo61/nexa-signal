@@ -41,25 +41,25 @@ export function NodeLayer({
         const quietNonPriority = hasPriorityFocus && !isEmphasized;
         const tone =
           node.type === 'decayer'
-            ? '#8C70B6'
+            ? '#9E8AC5'
             : node.type === 'amplifier'
-              ? '#A6D6FF'
+              ? '#9FD8FF'
               : node.type === 'stabilizer'
-                ? '#89FFD2'
+                ? '#7CF7D4'
                 : node.type === 'relay'
-                  ? '#A4C9FF'
+                  ? '#9ABFFF'
                   : theme.colors.node;
         return (
           <Group key={node.id}>
             <PulseRing
               x={node.x}
               y={node.y}
-              radius={18 + pulsePhase * (node.type === 'core' ? 8 : 6)}
+              radius={17 + pulsePhase * (node.type === 'core' ? 7 : 5.5)}
               color={
                 node.overload > 75 ? theme.colors.danger : theme.colors.core
               }
               opacity={
-                (0.2 + (1 - overloadFactor) * 0.16) *
+                (0.15 + (1 - overloadFactor) * 0.14) *
                 (quietNonPriority ? 0.7 : 1)
               }
             />
@@ -67,18 +67,18 @@ export function NodeLayer({
               <PulseRing
                 x={node.x}
                 y={node.y}
-                radius={r + 10 + pulsePhase * 3}
+                radius={r + 8 + pulsePhase * 2.6}
                 color={theme.colors.core}
-                opacity={isPulsing ? 0.56 : 0.34}
+                opacity={isPulsing ? 0.4 : 0.26}
               />
             ) : null}
             {node.type === 'relay' ? (
               <PulseRing
                 x={node.x}
                 y={node.y}
-                radius={12 + pulsePhase * 3}
+                radius={11 + pulsePhase * 2.5}
                 color={tone}
-                opacity={quietNonPriority ? 0.16 : 0.25}
+                opacity={quietNonPriority ? 0.12 : 0.2}
               />
             ) : null}
             <NodeOrb
