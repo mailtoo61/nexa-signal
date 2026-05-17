@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "composite": true,
+    "types": ["react", "react-native"]
+  },
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/i18n" },
+    { "path": "../../packages/game-engine" }
+  ],
+  "include": ["src"]
+}

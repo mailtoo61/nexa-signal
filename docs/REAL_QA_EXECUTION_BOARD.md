@@ -1,0 +1,7 @@
+# Real QA Execution Board
+
+| Device         | iOS Version | Build Label      | Onboarding Verification | Gameplay Verification | Continue/Recovery Verification | Localization Verification | Accessibility Verification | Reduced-Motion Verification | Battery/Performance Notes | Blocker Findings | Sign-Off Placeholder |
+| -------------- | ----------- | ---------------- | ----------------------- | --------------------- | ------------------------------ | ------------------------- | -------------------------- | --------------------------- | ------------------------- | ---------------- | -------------------- |
+| `[DEVICE_TBD]` | `[IOS_TBD]` | `[RC_LABEL_TBD]` | PENDING                 | PENDING               | PENDING                        | PENDING                   | PENDING                    | PENDING                     | `[TBD]`                   | `[TBD]`          | `[OWNER_TBD]`        |
+| `[DEVICE_TBD]` | `[IOS_TBD]` | `[RC_LABEL_TBD]` | PENDING                 | PENDING               | PENDING                        | PENDING                   | PENDING                    | PENDING                     | `[TBD]`                   | `[TBD]`          | `[OWNER_TBD]`        |
+| `[DEVICE_TBD]` | `[IOS_TBD]` | `[RC_LABEL_TBD]` | PENDING                 | PENDING               | PENDING                        | PENDING                   | PENDING                    | PENDING                     | `[TBD]`                   | `[TBD]`          | `[OWNER_TBD]`        |

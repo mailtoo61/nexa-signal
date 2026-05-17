@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "import"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "ignorePatterns": ["dist", "build", ".expo", "node_modules"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "import/no-default-export": "off"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/types" },
+    { "path": "packages/config" },
+    { "path": "packages/i18n" },
+    { "path": "packages/shared" },
+    { "path": "packages/game-engine" },
+    { "path": "apps/mobile" },
+    { "path": "apps/api" },
+    { "path": "apps/web" }
+  ]
+}
